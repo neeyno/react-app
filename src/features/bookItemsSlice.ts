@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { RootState, AppThunk } from "../app/store";
+import { AppThunk } from "../app/store";
 import { ECategories, ESortBy } from "../utils/helper";
 
 import { fetchBooks } from "./bookItemsAPI";
@@ -65,7 +65,7 @@ export const getBookItemsOnQuery =
 // fetching more books
 export const loadMoreBooks =
     (/* bookQuery: IQuery */): AppThunk => async (dispatch, getState) => {
-        const { query, startIndex, totalItems } = getState().bookItems;
+        const { query, startIndex /* totalItems */ } = getState().bookItems;
 
         let index = startIndex + 30;
 

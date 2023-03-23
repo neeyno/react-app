@@ -3,7 +3,7 @@ import Form from "react-bootstrap/Form";
 import { ECategories, ESortBy } from "../utils/helper";
 import { getBookItemsOnQuery, initialState } from "../features/bookItemsSlice";
 import { useDispatch } from "react-redux";
-import { AppDispatch, RootState } from "../app/store";
+import { AppDispatch } from "../app/store";
 import { useState } from "react";
 
 function NavbarComponent() {

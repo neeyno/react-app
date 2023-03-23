@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "./app/store";
@@ -15,7 +15,7 @@ function App() {
 
     useEffect(() => {
         dispatch(getBookItems());
-    }, []);
+    }, [dispatch]);
 
     return (
         <Suspense fallback={<Loading />}>
