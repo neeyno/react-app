@@ -1,5 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 body {
-    background-color: #e8ebec;
+    background-color: #e5e5e5;
     margin: 0;
     overflow-x: hidden;
 
@@ -19,19 +23,22 @@ body {
         monospace;
 }
 
-.container2xl {
-    background-color: #fffefe;
-    max-width: 1536px;
-    margin: 0;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 0.5rem;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+/* Toggle Menu */
+.hamburger.open span:nth-child(1) {
+    transform: rotate(-45deg);
+    transform-origin: center;
 }
 
-.containerNav {
-    background-color: #f3f3f3;
-    margin-left: auto;
-    margin-right: auto;
-    max-width: 1572px;
+.hamburger.open span:nth-child(2) {
+    display: none;
+}
+
+.hamburger.open span:nth-child(3) {
+    transform: rotate(45deg);
+    transform-origin: center;
+    margin-top: -7.8px;
+}
+
+.menu.open {
+    display: block;
 }

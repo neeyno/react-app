@@ -1,40 +1,43 @@
-export enum ESortBy {
-    newest = "newest", // Most recently published.
-    relevance = "relevance", // Relevance to search terms.
+// When you receive the JWT token from the server
+// const jwtToken = "your_jwt_token_here";
+
+export function getJwtToken() {
+    return localStorage.getItem("token");
 }
 
-export enum ECategories {
-    Any = "Any",
-    Art = "Art",
-    Business = "Business",
-    Comics = "Comics",
-    Computers = "Computers",
-    Food = "Food",
-    Education = "Education",
-    Engineering = "Engineering",
-    Entertainment = "Entertainment",
-    Health = "Health",
-    History = "History",
-    Hobbies = "Hobbies",
-    Medical = "Medical",
-    Politics = "Politics",
-    Religion = "Religion",
-    Romance = "Romance",
-    Science = "Science",
-    Fiction = "Fiction",
-    Sports = "Sports",
-    Technology = "Technology",
-    Travel = "Travel",
+export function setJwtToken(jwtToken: string) {
+    localStorage.setItem("token", jwtToken);
 }
 
-// export type Category = typeof ECategories[keyof typeof ECategories];
-// export type SortBy = typeof ESortBy[keyof typeof ESortBy];
+export function removeJwtToken() {
+    localStorage.removeItem("token");
+}
 
-/* 
-const categories: string[] = (
-    Object.values(Categories) as Array<keyof typeof Categories>
-).reduce((result: string[], value: string) => {
-    result.push(value);
-    return result;
-}, []);
+export function isAuthenticated() {
+    const token = localStorage.getItem("token");
+    return !!token;
+}
+
+/**
+ * when you want to logout
  */
+export function logout() {
+    removeJwtToken();
+}
+
+/**
+ * When you receive the JWT token from the server
+ * login(jwtToken);
+ */
+export function login(jwtToken: string) {
+    setJwtToken(jwtToken);
+}
+
+// Headers for the HTTP requests
+export function getHeaders() {
+    const headers = {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + getJwtToken(),
+    };
+    return headers;
+}

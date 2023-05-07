@@ -1,134 +1,75 @@
-import Form from "react-bootstrap/Form";
-
-import { ECategories, ESortBy } from "../utils/helper";
-import { getBookItemsOnQuery, initialState } from "../features/bookItemsSlice";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../app/store";
 import { useState } from "react";
 
-function NavbarComponent() {
-    const dispatch: AppDispatch = useDispatch();
+const styles = {
+    animation: `ease-in-out duration-150 hover:text-blue-600`,
+};
 
-    const [searchInput, setSearchInput] = useState(initialState.query.input);
-    const [category, setCategory] = useState<string>(
-        initialState.query.category
-    );
-    const [sortBy, setSortBy] = useState<string>(initialState.query.sortBy);
+const Navbar = () => {
+    const [menuOpen, SetMenuOpen] = useState(false);
 
-    function handleSearchClicked() {
-        if (searchInput === "") return;
-
-        dispatch(
-            getBookItemsOnQuery({
-                input: searchInput,
-                category: category,
-                sortBy: sortBy,
-            })
-        );
-    }
+    const closeMenu = () => {
+        if (!menuOpen) {
+            SetMenuOpen(menuOpen);
+            // menuOpen = true;
+        } else {
+            SetMenuOpen(!menuOpen);
+            // menuOpen = false;
+        }
+    };
 
     return (
-        <>
-            <nav className="container2xl container navbar navbar-expand navbar-light sticky-top">
-                <div className="container">
-                    <span className="navbar-brand">
-                        <a className="nav-link" href="/">
-                            Book Search App
+        <header
+            className={`max-w-6xl borber border-b border-gray-800 m-auto text-1xs sm:text-xl  py-4 px-4 flex justify-between items-center flex-wrap ${
+                menuOpen ? `open` : ""
+            }`}
+        >
+            <div className="z-50">
+                <h2 className={`sm:text-2xl font-semibold ` + styles.animation}>
+                    <a href="/">{"Main"}</a>
+                </h2>
+            </div>
+            <nav className="">
+                <ul
+                    className={`menu hidden absolute left-0 top-0 m-0 py-20 pt-16 px-2 bg-neutral-300/70 backdrop-blur-xl z-40 w-full h-52 sm:w-unset sm:h-auto sm:bg-transparent sm:flex sm:py-2 sm:static sm:left-unset sm:top-unset ${
+                        menuOpen ? `open` : ""
+                    }`}
+                >
+                    <li className="mb-4 mx-0 sm:mb-0 sm:mx-3" title="Projects">
+                        <a
+                            href="#projects"
+                            className={`` + styles.animation}
+                            onClick={() => closeMenu()}
+                        >
+                            {"Pulls"}
                         </a>
-                    </span>
-                </div>
+                    </li>
+
+                    <li
+                        className="mb-4 mt-2 mx-0 sm:mb-0 sm:mt-0 sm:mx-3"
+                        title="Experience"
+                    >
+                        <a
+                            href="#experiences"
+                            className={`` + styles.animation}
+                            onClick={() => closeMenu()}
+                        >
+                            {"Profile"}
+                        </a>
+                    </li>
+                </ul>
             </nav>
-            <nav className="containerNav shadow border-bottom border-primary navbar navbar-expand navbar-light sticky-top">
-                <div className="container justify-content-center">
-                    <div className="row">
-                        <div className="col-12">
-                            <div className="input-group">
-                                <Form.Control
-                                    type="text"
-                                    aria-label="Search"
-                                    placeholder="type something"
-                                    className="code"
-                                    onChange={(e) =>
-                                        setSearchInput(e.target.value)
-                                    }
-                                />
-                                <button
-                                    id="basic-addon1"
-                                    onClick={() => handleSearchClicked()}
-                                    className="btn btn-primary input-group-text"
-                                >
-                                    Search
-                                </button>
-                            </div>
-                        </div>
-                        <div className="col-6">
-                            <Form.Group controlId="exampleForm.ControlInput1">
-                                <Form.Label className="mb-0">
-                                    Category
-                                </Form.Label>
-                                <Form.Select
-                                    size="sm"
-                                    aria-label="selectCategory"
-                                    value={category}
-                                    onChange={(e) =>
-                                        setCategory(
-                                            ECategories[
-                                                e.target
-                                                    .value as keyof typeof ECategories
-                                            ]
-                                        )
-                                    }
-                                >
-                                    {(Object.values(ECategories) as string[]) // Array<keyof typeof ECategories>
-                                        .map((enumKey, index) => {
-                                            return (
-                                                <option
-                                                    value={enumKey}
-                                                    key={index}
-                                                >
-                                                    {enumKey}
-                                                </option>
-                                            );
-                                        })}
-                                </Form.Select>
-                            </Form.Group>
-                        </div>
-                        <div className="col-6">
-                            <Form.Group controlId="exampleForm.ControlInput1">
-                                <Form.Label className="mb-0">
-                                    Sort by
-                                </Form.Label>
-                                <Form.Select
-                                    size="sm"
-                                    aria-label="selectSort"
-                                    value={sortBy}
-                                    onChange={(e) =>
-                                        setSortBy(
-                                            ESortBy[
-                                                e.target
-                                                    .value as keyof typeof ESortBy
-                                            ]
-                                        )
-                                    }
-                                >
-                                    {(Object.keys(ESortBy) as string[]) //Array<keyof typeof ESortBy>
-                                        .map((enumKey, index) => {
-                                            return (
-                                                <option
-                                                    value={enumKey}
-                                                    key={index}
-                                                >
-                                                    {enumKey}
-                                                </option>
-                                            );
-                                        })}
-                                </Form.Select>
-                            </Form.Group>
-                        </div>
-                    </div>
-                </div>
-            </nav>
-        </>
+            <div
+                className={`hamburger z-50 flex flex-col justify-center items-center sm:hidden ${
+                    menuOpen ? `open` : ""
+                }`}
+                onClick={() => SetMenuOpen(!menuOpen)}
+            >
+                <span className="h-0.5 w-7 mb-1.5 bg-neutral-800"></span>
+                <span className="h-0.5 w-7 mb-1.5 bg-neutral-800"></span>
+                <span className="h-0.5 w-7 mb-1.5 bg-neutral-800"></span>
+            </div>
+        </header>
     );
-}
-export default NavbarComponent;
+};
+
+export default Navbar;
