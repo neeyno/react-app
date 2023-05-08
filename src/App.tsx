@@ -5,10 +5,10 @@ import NavbarComponent from "./components/NavbarComponent";
 import Loading from "./components/Loading";
 import NotFoundPage from "./pages/NotFoundPage";
 import Home from "./pages/Home";
-import { UserModel } from "./models/user";
+import { UserModel } from "./models/models";
 
 import * as callApi from "./api";
-import { setJwtToken } from "./utils/helper";
+import { setJwtToken, getJwtToken } from "./utils/helper";
 
 function App() {
     const [loggedInUser, setLoggedInUser] = useState<UserModel | null>(null);
@@ -42,19 +42,32 @@ function App() {
         }
     } */
 
-    /*  useEffect(() => {
+    useEffect(() => {
         async function fetchUser() {
-            try {
-                const user = await callApi.getLoggedInUser();
+            const username = "User1337";
+            const address = "0x42e3Ba6a7f52d99c60Fa7A7C3ce4a5ea89649896";
+            let jwt =
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZGRyZXNzIjoiMHg0MmUzQmE2YTdmNTJkOTljNjBGYTdBN0MzY2U0YTVlYTg5NjQ5ODk2IiwiZXhwIjoxNjgzNjEyMzY2LCJ1c2VybmFtZSI6IlVzZXIxMzM3In0.TrWGMORPVnGTlNCNQejFGxUPEfGMKOqDLVPtpSlHfOw";
 
+            try {
+                const response = await callApi.getLoggedInUser({
+                    username,
+                    address,
+                    jwt,
+                });
+
+                setJwtToken(response.token);
+                const user = { username, address, jwt: response.token };
                 setLoggedInUser(user);
+
+                console.log(user);
             } catch (error) {
                 console.error(error);
             }
         }
 
         fetchUser();
-    }, []); */
+    }, []);
 
     return (
         <Suspense fallback={<Loading />}>
