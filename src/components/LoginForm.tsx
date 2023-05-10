@@ -13,7 +13,7 @@ const LoginForm: React.FC = () => {
 
         const jwt = "";
 
-        try {
+        /* try {
             const data = await logIn({ username, address, jwt });
             // Do something with the token (e.g., save it to the state, local storage, or send it to another component)
             console.log("Login successful:", data);
@@ -23,7 +23,7 @@ const LoginForm: React.FC = () => {
             } else {
                 setError("An unknown error occurred.");
             }
-        }
+        } */
     };
 
     return (

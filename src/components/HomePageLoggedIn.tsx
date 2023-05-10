@@ -6,11 +6,11 @@ import Loading from "./Loading";
 
 const styles = {};
 
-interface HomePageProps {
-    loggedInUser: UserModel | null;
-}
+// interface HomePageProps {
+//     loggedInUser: UserModel | null;
+// }
 
-const NotesPageLoggedIn = ({ loggedInUser }: HomePageProps) => {
+const NotesPageLoggedIn = (/* { loggedInUser }: HomePageProps */) => {
     //
     // const [notes, setNotes] = useState<NoteModel[]>([]);
     // const [notesIsLoading, setNotesIsLoading] = useState(true);
@@ -85,9 +85,9 @@ const NotesPageLoggedIn = ({ loggedInUser }: HomePageProps) => {
         <>
             {/* {notesIsLoading && <Loading />} */}
             {/* {showNotesLoadingError && <p>Something went wrong...</p>} */}
-            {loggedInUser && (
+            {"loggedInUser" && (
                 <div>
-                    <p>Welcome {loggedInUser.username}</p>
+                    <p>Welcome {"loggedInUser.username"}</p>
                     <button onClick={() => handlePullReqest("singlePull")}>
                         Single Pull
                     </button>

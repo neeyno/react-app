@@ -1,17 +1,24 @@
 import { useEffect, useState, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 
+import { getDefaultWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import { configureChains, createConfig, WagmiConfig } from "wagmi";
+
 import NavbarComponent from "./components/NavbarComponent";
-import Loading from "./components/Loading";
+// import Loading from "./components/Loading";
 import NotFoundPage from "./pages/NotFoundPage";
 import Home from "./pages/Home";
 import { UserModel } from "./models/models";
 
 import * as callApi from "./api";
 import { setJwtToken, getJwtToken } from "./utils/helper";
+import { chains, config } from "./utils/web3";
+
+import { useAccount, useConnect, useEnsName } from "wagmi";
 
 function App() {
-    const [loggedInUser, setLoggedInUser] = useState<UserModel | null>(null);
+    // const [loggedInUser, setLoggedInUser] = useState<UserModel | null>(null);
+    const { address, isConnected } = useAccount();
 
     const [showSignupModal, setShowSignupModal] = useState(false);
     const [showLoginModal, setShowLoginModal] = useState(false);
@@ -58,7 +65,7 @@ function App() {
 
                 setJwtToken(response.token);
                 const user = { username, address, jwt: response.token };
-                setLoggedInUser(user);
+                // setLoggedInUser(user);
 
                 console.log(user);
             } catch (error) {
@@ -70,19 +77,19 @@ function App() {
     }, []);
 
     return (
-        <Suspense fallback={<Loading />}>
-            <NavbarComponent />
-            <div className="max-w-6xl mx-auto">
-                <Routes>
-                    <Route
-                        path="/"
-                        element={<Home loggedInUser={loggedInUser} />}
-                    />
-                    <Route path="/:id/:bookId" element={<NotFoundPage />} />
-                    <Route path="/*" element={<NotFoundPage />} />
-                </Routes>
-            </div>
-        </Suspense>
+        <WagmiConfig config={config}>
+            <RainbowKitProvider chains={chains}>
+                <>
+                    <NavbarComponent />
+                    <div className="max-w-6xl mx-auto">
+                        <Routes>
+                            <Route path="/" element={<Home />} />
+                            <Route path="/*" element={<NotFoundPage />} />
+                        </Routes>
+                    </div>
+                </>
+            </RainbowKitProvider>
+        </WagmiConfig>
     );
 }
 

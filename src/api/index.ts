@@ -1,4 +1,5 @@
 // import exp from "constants";
+import { Address } from "wagmi";
 import { UserModel } from "../models/models";
 import { getJwtToken } from "../utils/helper";
 
@@ -10,7 +11,7 @@ export interface SignUpCredentials {
 
 export interface LoginCredentials {
     username: string;
-    address: string;
+    address: Address;
     jwt: string;
 }
 
