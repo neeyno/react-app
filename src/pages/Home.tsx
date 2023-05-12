@@ -3,28 +3,28 @@ import { Link } from "react-router-dom";
 import { UserModel } from "../models/models";
 import { useEffect, useState } from "react";
 import * as callApi from "../api";
-import { useAccount, useConnect, useEnsName } from "wagmi";
+import { useAccount, useConnect } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-
-import Loading from "../components/Loading";
+import { useSignMessage } from "wagmi";
 
 // interface HomePageProps {
 //     loggedInUser: UserModel | null;
 // }
 
-// : <Loading />}</div>/>
-
 function Home(/* { loggedInUser }: HomePageProps */) {
-    const { address, isConnected } = useAccount();
-
     const [username, setUsername] = useState<string>("");
-    // const [address, setAddress] = useState<string>(""); // use web3 to get address
     const [error, setError] = useState<string | null>(null);
+
+    const { address, isConnected, isConnecting, isDisconnected } = useAccount();
+    const { data, isError, isLoading, isSuccess, signMessageAsync } =
+        useSignMessage({
+            message: "Sing up!?",
+        });
 
     async function handlePullReqest(type: string) {
         if (!address) return;
         const username = "User1337";
-        // const address = "0x42e3Ba6a7f52d99c60Fa7A7C3ce4a5ea89649896";
+
         let jwt =
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZGRyZXNzIjoiMHg0MmUzQmE2YTdmNTJkOTljNjBGYTdBN0MzY2U0YTVlYTg5NjQ5ODk2IiwiZXhwIjoxNjgzNjEyMzY2LCJ1c2VybmFtZSI6IlVzZXIxMzM3In0.TrWGMORPVnGTlNCNQejFGxUPEfGMKOqDLVPtpSlHfOw";
 
@@ -77,32 +77,57 @@ function Home(/* { loggedInUser }: HomePageProps */) {
         }
     };
 
+    async function handleSingUp() {
+        try {
+            if (address === undefined) throw new Error("No address");
+            if (username === undefined) throw new Error("No username");
+
+            const signature = await signMessageAsync();
+
+            if (signature === undefined) throw new Error("No signature");
+
+            const token = await callApi.signUp({
+                username,
+                address,
+                signature,
+            });
+
+            // Do something with the token (e.g., save it to the state, local storage, or send it to another component)
+            console.log("Sign Up successful:", token);
+        } catch (err) {
+            console.error(err);
+
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError("An unknown error occurred.");
+            }
+        } finally {
+            // setLoading(false);
+        }
+    }
+
     return (
         <>
-            {isConnected ? (
-                <>
-                    {/* {notesIsLoading && <Loading />} */}
-                    {/* {showNotesLoadingError && <p>Something went wrong...</p>} */}
-                    {isConnected && (
-                        <div>
-                            <p>Welcome {username}</p>
-                            <button
-                                onClick={() => handlePullReqest("singlePull")}
-                            >
-                                Single Pull
-                            </button>
-                            <button
-                                onClick={() => handlePullReqest("multiPull")}
-                            >
-                                Multi Pull
-                            </button>
-                        </div>
-                    )}
-                </>
-            ) : (
-                <>
-                    <p>Please Log In to see Your profile</p>
-                    <h1>Login</h1>
+            {isConnected && (
+                <div>
+                    <p>Welcome {username}</p>
+                    <button onClick={() => handlePullReqest("singlePull")}>
+                        Single Pull
+                    </button>
+                    <button onClick={() => handlePullReqest("multiPull")}>
+                        Multi Pull
+                    </button>
+                    <button disabled={isLoading} onClick={() => handleSingUp()}>
+                        Sign message
+                    </button>
+                </div>
+            )}
+
+            {isDisconnected && (
+                <div>
+                    <p>Please Connect Wallet</p>
+                    <hr />
                     <form onSubmit={handleSubmit}>
                         <div>
                             <label htmlFor="username">Username:</label>
@@ -128,7 +153,7 @@ function Home(/* { loggedInUser }: HomePageProps */) {
                         {error && <div>{error}</div>}
                     </form>
                     <ConnectButton />
-                </>
+                </div>
             )}
         </>
     );

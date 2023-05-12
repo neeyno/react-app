@@ -3,10 +3,12 @@ import { Address } from "wagmi";
 import { UserModel } from "../models/models";
 import { getJwtToken } from "../utils/helper";
 
+export type Signature = `0x${string}`;
+
 export interface SignUpCredentials {
     username: string;
-    address: string;
-    signature: string;
+    address: Address;
+    signature: Signature;
 }
 
 export interface LoginCredentials {

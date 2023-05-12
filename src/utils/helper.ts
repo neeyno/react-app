@@ -17,6 +17,23 @@ export function isAuthenticated() {
     const token = localStorage.getItem("token");
     return !!token;
 }
+export function isRegistered() {
+    const token = localStorage.getItem("token");
+    return !!token;
+}
+
+export function isUser() {
+    const username = localStorage.getItem("username");
+    return !!username;
+}
+
+export function setUsername(username: string) {
+    localStorage.setItem("username", username);
+}
+
+export function getUsername() {
+    return localStorage.getItem("username");
+}
 
 /**
  * when you want to logout

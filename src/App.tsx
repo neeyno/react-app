@@ -11,14 +11,14 @@ import Home from "./pages/Home";
 import { UserModel } from "./models/models";
 
 import * as callApi from "./api";
-import { setJwtToken, getJwtToken } from "./utils/helper";
+import { setJwtToken, getJwtToken, isUser, isRegistered } from "./utils/helper";
 import { chains, config } from "./utils/web3";
 
 import { useAccount, useConnect, useEnsName } from "wagmi";
 
 function App() {
     // const [loggedInUser, setLoggedInUser] = useState<UserModel | null>(null);
-    const { address, isConnected } = useAccount();
+    const { address, isConnecting, isDisconnected } = useAccount();
 
     const [showSignupModal, setShowSignupModal] = useState(false);
     const [showLoginModal, setShowLoginModal] = useState(false);
@@ -49,31 +49,35 @@ function App() {
         }
     } */
 
-    useEffect(() => {
-        async function fetchUser() {
-            const username = "User1337";
-            const address = "0x42e3Ba6a7f52d99c60Fa7A7C3ce4a5ea89649896";
-            let jwt =
-                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZGRyZXNzIjoiMHg0MmUzQmE2YTdmNTJkOTljNjBGYTdBN0MzY2U0YTVlYTg5NjQ5ODk2IiwiZXhwIjoxNjgzNjEyMzY2LCJ1c2VybmFtZSI6IlVzZXIxMzM3In0.TrWGMORPVnGTlNCNQejFGxUPEfGMKOqDLVPtpSlHfOw";
+    async function fetchUser() {
+        const username = "User1337";
+        const address = "0x42e3Ba6a7f52d99c60Fa7A7C3ce4a5ea89649896";
+        let jwt =
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZGRyZXNzIjoiMHg0MmUzQmE2YTdmNTJkOTljNjBGYTdBN0MzY2U0YTVlYTg5NjQ5ODk2IiwiZXhwIjoxNjgzNjEyMzY2LCJ1c2VybmFtZSI6IlVzZXIxMzM3In0.TrWGMORPVnGTlNCNQejFGxUPEfGMKOqDLVPtpSlHfOw";
 
-            try {
-                const response = await callApi.getLoggedInUser({
-                    username,
-                    address,
-                    jwt,
-                });
+        try {
+            const response = await callApi.getLoggedInUser({
+                username,
+                address,
+                jwt,
+            });
 
-                setJwtToken(response.token);
-                const user = { username, address, jwt: response.token };
-                // setLoggedInUser(user);
+            setJwtToken(response.token);
+            const user = { username, address, jwt: response.token };
+            // setLoggedInUser(user);
 
-                console.log(user);
-            } catch (error) {
-                console.error(error);
-            }
+            console.log(user);
+        } catch (error) {
+            console.error(error);
         }
+    }
 
-        fetchUser();
+    useEffect(() => {
+        if (isUser() && isRegistered()) {
+            setShowLoginModal(true);
+        } else {
+            setShowSignupModal(true);
+        }
     }, []);
 
     return (

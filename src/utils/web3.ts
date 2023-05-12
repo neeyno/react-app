@@ -13,7 +13,6 @@ import { publicProvider } from "wagmi/providers/public";
 
 const API_KEY_ALECHEMY =
     process.env.ALCHEMY_ID !== undefined ? process.env.ALCHEMY_ID : "";
-
 const API_KEY_INFURA =
     process.env.ALCHEMY_ID !== undefined ? process.env.ALCHEMY_ID : "";
 
