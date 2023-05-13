@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 
 import { getDefaultWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { configureChains, createConfig, WagmiConfig } from "wagmi";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 import NavbarComponent from "./components/NavbarComponent";
 // import Loading from "./components/Loading";
@@ -11,17 +12,21 @@ import Home from "./pages/Home";
 import { UserModel } from "./models/models";
 
 import * as callApi from "./api";
-import { setJwtToken, getJwtToken, isUser, isRegistered } from "./utils/helper";
-import { chains, config } from "./utils/web3";
+import { setJwtToken, getJwtToken } from "./utils/helper";
 
-import { useAccount, useConnect, useEnsName } from "wagmi";
+import { useAccount, useConnect, useEnsName, useSignMessage } from "wagmi";
 
 function App() {
-    // const [loggedInUser, setLoggedInUser] = useState<UserModel | null>(null);
-    const { address, isConnecting, isDisconnected } = useAccount();
+    const { address, isConnecting, isDisconnected, isConnected } = useAccount();
+    const { data, isError, isLoading, isSuccess, signMessageAsync } =
+        useSignMessage({
+            message: "Sing up!?",
+        });
 
     const [showSignupModal, setShowSignupModal] = useState(false);
     const [showLoginModal, setShowLoginModal] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
     /* 
     User accesses the application.
     Check if the user's Ethereum address is registered in the database.
@@ -33,67 +38,111 @@ function App() {
     When the user logs out, invalidate the token and store it in the server's revocation list. Remove the token from the frontend storage.
     */
 
-    /* async function handleSignUp(username: string, address: string) {
-        const signature = "getSignature()";
+    /*     async function handleSingUp() {
         try {
-            // const user = await callApi.signUpOrLogin(email, password);
+            if (address === undefined) throw new Error("No address");
+
+            const signature = await signMessageAsync();
+
+            if (signature === undefined) throw new Error("No signature");
+
             const response = await callApi.signUp({
-                username,
                 address,
                 signature,
             });
 
             setJwtToken(response.token);
-        } catch (error) {
-            console.error(error);
+
+            // Do something with the token (e.g., save it to the state, local storage, or send it to another component)
+            console.log("Sign Up successful:", response.token);
+        } catch (err) {
+            console.error(err);
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError("An unknown error occurred.");
+            }
+        } finally {
+            // setLoading(false);
         }
     } */
 
-    async function fetchUser() {
-        const username = "User1337";
-        const address = "0x42e3Ba6a7f52d99c60Fa7A7C3ce4a5ea89649896";
-        let jwt =
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZGRyZXNzIjoiMHg0MmUzQmE2YTdmNTJkOTljNjBGYTdBN0MzY2U0YTVlYTg5NjQ5ODk2IiwiZXhwIjoxNjgzNjEyMzY2LCJ1c2VybmFtZSI6IlVzZXIxMzM3In0.TrWGMORPVnGTlNCNQejFGxUPEfGMKOqDLVPtpSlHfOw";
+    /* async function fetchUser() {
+        // const username = getUsername();
+        const token = getJwtToken();
 
-        try {
-            const response = await callApi.getLoggedInUser({
-                username,
-                address,
-                jwt,
-            });
+        if (token && address) {
+            try {
+                const response = await callApi.getLoggedInUser({
+                    address,
+                    token,
+                });
 
-            setJwtToken(response.token);
-            const user = { username, address, jwt: response.token };
-            // setLoggedInUser(user);
+                setJwtToken(response.token);
 
-            console.log(user);
-        } catch (error) {
-            console.error(error);
+                console.log(response.token);
+            } catch (error) {
+                console.error(error);
+            }
+
+            try {
+                const data = await callApi.getLoggedInUser({
+                    address,
+                    token,
+                });
+
+                setJwtToken(data.token);
+
+                // Do something with the token (e.g., save it to the state, local storage, or send it to another component)
+                console.log("Login successful:", data);
+            } catch (err) {
+                console.error(err);
+
+                if (err instanceof Error) {
+                    setError(err.message);
+                } else {
+                    setError("An unknown error occurred.");
+                }
+            }
         }
-    }
+    } */
 
-    useEffect(() => {
-        if (isUser() && isRegistered()) {
-            setShowLoginModal(true);
-        } else {
-            setShowSignupModal(true);
+    // useEffect(() => {
+    //     if (isRegistered() && isConnected) {
+    //         fetchUser();
+    //         //setShowLoginModal(true);
+    //     } else {
+    //         setShowSignupModal(true);
+    //     }
+    // }, [isConnected]);
+
+    /* const LoginOrSignUp = () => {
+        if (isConnected) {
+            return isRegistered() ? (
+                <Home />
+            ) : (
+                <button onClick={handleSingUp}>Sign up</button>
+            );
         }
-    }, []);
+        return (
+            <div>
+                <p>Please Connect Wallet</p>
+                <hr />
+                <ConnectButton />
+            </div>
+        );
+    }; */
 
     return (
-        <WagmiConfig config={config}>
-            <RainbowKitProvider chains={chains}>
-                <>
-                    <NavbarComponent />
-                    <div className="max-w-6xl mx-auto">
-                        <Routes>
-                            <Route path="/" element={<Home />} />
-                            <Route path="/*" element={<NotFoundPage />} />
-                        </Routes>
-                    </div>
-                </>
-            </RainbowKitProvider>
-        </WagmiConfig>
+        <>
+            <NavbarComponent />
+            <div className="max-w-6xl mx-auto">
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/*" element={<NotFoundPage />} />
+                </Routes>
+            </div>
+        </>
     );
 }
 

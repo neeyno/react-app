@@ -17,7 +17,7 @@ export function isAuthenticated() {
     const token = localStorage.getItem("token");
     return !!token;
 }
-export function isRegistered() {
+export function hasToken() {
     const token = localStorage.getItem("token");
     return !!token;
 }

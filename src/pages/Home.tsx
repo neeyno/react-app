@@ -6,16 +6,17 @@ import * as callApi from "../api";
 import { useAccount, useConnect } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useSignMessage } from "wagmi";
+import { getJwtToken, hasToken, setJwtToken } from "../utils/helper";
 
 // interface HomePageProps {
 //     loggedInUser: UserModel | null;
 // }
 
 function Home(/* { loggedInUser }: HomePageProps */) {
-    const [username, setUsername] = useState<string>("");
+    const [loggedInUser, setLoggedInUser] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    const { address, isConnected, isConnecting, isDisconnected } = useAccount();
+    const { address, isConnected } = useAccount();
     const { data, isError, isLoading, isSuccess, signMessageAsync } =
         useSignMessage({
             message: "Sing up!?",
@@ -25,22 +26,19 @@ function Home(/* { loggedInUser }: HomePageProps */) {
         if (!address) return;
         const username = "User1337";
 
-        let jwt =
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZGRyZXNzIjoiMHg0MmUzQmE2YTdmNTJkOTljNjBGYTdBN0MzY2U0YTVlYTg5NjQ5ODk2IiwiZXhwIjoxNjgzNjEyMzY2LCJ1c2VybmFtZSI6IlVzZXIxMzM3In0.TrWGMORPVnGTlNCNQejFGxUPEfGMKOqDLVPtpSlHfOw";
-
+        let token = getJwtToken();
+        if (token === null) return;
         try {
             if (type === "singlePull") {
                 const response = await callApi.createSinglePull({
-                    username,
                     address,
-                    jwt,
+                    token,
                 });
                 console.log(response.items);
             } else {
                 const response = await callApi.createMultiPull({
-                    username,
                     address,
-                    jwt,
+                    token,
                 });
                 console.log(response.items);
             }
@@ -54,18 +52,16 @@ function Home(/* { loggedInUser }: HomePageProps */) {
         e.preventDefault();
         setError(null);
 
-        try {
-            const jwt =
-                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZGRyZXNzI…M3In0.OM0Q0XADKI4wgvThw7J1uVchH_IfmW9CMDEZ37dsmy4";
+        let token = getJwtToken();
 
-            const data = await callApi.getLoggedInUser({
-                username,
-                address,
-                jwt,
-            });
+        try {
+            // const data = await callApi.getLoggedInUser({
+            //     address,
+            //     token,
+            // });
 
             // Do something with the token (e.g., save it to the state, local storage, or send it to another component)
-            console.log("Login successful:", data);
+            console.log("Login successful:", "data");
         } catch (err) {
             console.error(err);
 
@@ -78,25 +74,25 @@ function Home(/* { loggedInUser }: HomePageProps */) {
     };
 
     async function handleSingUp() {
+        console.log(data);
         try {
             if (address === undefined) throw new Error("No address");
-            if (username === undefined) throw new Error("No username");
 
             const signature = await signMessageAsync();
 
             if (signature === undefined) throw new Error("No signature");
 
-            const token = await callApi.signUp({
-                username,
+            const response = await callApi.loginOrSignUp({
                 address,
                 signature,
             });
 
+            setJwtToken(response.token);
+
             // Do something with the token (e.g., save it to the state, local storage, or send it to another component)
-            console.log("Sign Up successful:", token);
+            console.log("Sign Up successful:", response.token);
         } catch (err) {
             console.error(err);
-
             if (err instanceof Error) {
                 setError(err.message);
             } else {
@@ -107,24 +103,90 @@ function Home(/* { loggedInUser }: HomePageProps */) {
         }
     }
 
+    async function fetchUser() {
+        // const username = getUsername();
+        const token = getJwtToken();
+
+        if (token && address) {
+            try {
+                const data = await callApi.getLoggedInUser({
+                    address,
+                    token,
+                });
+
+                setJwtToken(data.token);
+
+                setLoggedInUser(true);
+
+                // Do something with the token (e.g., save it to the state, local storage, or send it to another component)
+                console.log("Login successful:", data);
+            } catch (err) {
+                console.error(err);
+
+                setLoggedInUser(false);
+
+                if (err instanceof Error) {
+                    setError(err.message);
+                } else {
+                    setError("An unknown error occurred.");
+                }
+            }
+        }
+    }
+
+    useEffect(() => {
+        if (hasToken() && isConnected) {
+            fetchUser();
+            //setShowLoginModal(true);
+        } else {
+            console.error("error");
+        }
+    }, [isConnected]);
+
+    if (!isConnected)
+        return (
+            <div>
+                <p>Please Connect Wallet</p>
+                <hr />
+                <ConnectButton />
+            </div>
+        );
+
     return (
         <>
             {isConnected && (
                 <div>
-                    <p>Welcome {username}</p>
-                    <button onClick={() => handlePullReqest("singlePull")}>
-                        Single Pull
-                    </button>
-                    <button onClick={() => handlePullReqest("multiPull")}>
-                        Multi Pull
-                    </button>
-                    <button disabled={isLoading} onClick={() => handleSingUp()}>
-                        Sign message
-                    </button>
+                    <p>Welcome {address}</p>
+                    {loggedInUser ? (
+                        <div>
+                            <button
+                                onClick={() => handlePullReqest("singlePull")}
+                            >
+                                Single Pull
+                            </button>
+                            <button
+                                onClick={() => handlePullReqest("multiPull")}
+                            >
+                                Multi Pull
+                            </button>
+                            {/* <button
+                                disabled={isLoading}
+                                onClick={() => handleSingUp()}
+                            >
+                                Sign message
+                            </button> */}
+                        </div>
+                    ) : (
+                        <button
+                            disabled={isLoading}
+                            onClick={() => handleSingUp()}
+                        >
+                            Sign message
+                        </button>
+                    )}
                 </div>
             )}
-
-            {isDisconnected && (
+            {/*  {isDisconnected && (
                 <div>
                     <p>Please Connect Wallet</p>
                     <hr />
@@ -152,9 +214,9 @@ function Home(/* { loggedInUser }: HomePageProps */) {
                         <button type="submit">Log in</button>
                         {error && <div>{error}</div>}
                     </form>
-                    <ConnectButton />
                 </div>
-            )}
+            )} */}
+            {error && <div>{error}</div>}
         </>
     );
 }

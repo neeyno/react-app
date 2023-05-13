@@ -6,15 +6,13 @@ import { getJwtToken } from "../utils/helper";
 export type Signature = `0x${string}`;
 
 export interface SignUpCredentials {
-    username: string;
     address: Address;
     signature: Signature;
 }
 
 export interface LoginCredentials {
-    username: string;
     address: Address;
-    jwt: string;
+    token: string;
 }
 
 interface LoginResponse {
@@ -28,20 +26,21 @@ interface PullResponse {
 /* 
 // User functions
 */
-export async function signUp(
+export async function loginOrSignUp(
     credentials: SignUpCredentials
 ): Promise<LoginResponse> {
-    const { username, address, signature } = credentials;
-    const response = await fetchData(`/api/register`, {
+    // const { address, signature } = credentials;
+    console.log(credentials);
+    const response = await fetchData(`/api/login`, {
         method: "POST",
-        // headers: {
-        //     "Content-Type": "application/json",
-        // },
         headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
+            "Content-Type": "application/json",
         },
-        body: new URLSearchParams({ username, address, signature }),
-        // body: JSON.stringify({ username, address, jwt }),
+        // headers: {
+        //     "Content-Type": "application/x-www-form-urlencoded",
+        // },
+        // body: new URLSearchParams({ address, signature }),
+        body: JSON.stringify(credentials),
     });
 
     return response;
@@ -50,13 +49,18 @@ export async function signUp(
 export async function logIn(
     credentials: LoginCredentials
 ): Promise<LoginResponse> {
-    const { username, address } = credentials;
-    const response = await fetchData(`/api/login`, {
+    const { address, token } = credentials;
+    const response = await fetchData(`/api/auth`, {
         method: "POST",
+        // headers: {
+        //     "Content-Type": "application/x-www-form-urlencoded",
+        // },
+        // body: new URLSearchParams({ token, address }),
         headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
+            "Content-Type": "application/json",
+            Authorization: token,
         },
-        body: new URLSearchParams({ username, address }),
+        body: JSON.stringify(credentials),
     });
 
     return response;
@@ -71,15 +75,15 @@ export async function logOut() {
 export async function getLoggedInUser(
     credentials: LoginCredentials
 ): Promise<LoginResponse> {
-    const { username, address, jwt } = credentials;
+    const { address, token } = credentials;
 
     const response = await fetchData(`/api/auth`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            Authorization: jwt,
+            Authorization: token,
         },
-        body: JSON.stringify({ username, address, jwt }),
+        body: JSON.stringify(credentials),
     });
 
     return response;
@@ -97,8 +101,8 @@ export async function createSinglePull(
     credentials: LoginCredentials
 ): Promise<PullResponse> {
     // const token = getJwtToken();
-    const { username, address, jwt } = credentials;
-    if (!jwt)
+    const { address, token } = credentials;
+    if (!token)
         throw new Error(
             "No token found in local storage. Please log in first to create a pull request."
         );
@@ -107,9 +111,9 @@ export async function createSinglePull(
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            Authorization: jwt,
+            Authorization: token,
         },
-        body: JSON.stringify({ username, address, jwt }),
+        body: JSON.stringify(credentials),
         // method: "POST",
         // headers: {
         //     // "Content-Type": "application/json",
@@ -127,8 +131,8 @@ export async function createMultiPull(
     credentials: LoginCredentials
 ): Promise<PullResponse> {
     // const token = getJwtToken();
-    const { username, address, jwt } = credentials;
-    if (!jwt)
+    const { address, token } = credentials;
+    if (!token)
         throw new Error(
             "No token found in local storage. Please log in first to create a pull request."
         );
@@ -137,9 +141,9 @@ export async function createMultiPull(
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            Authorization: jwt,
+            Authorization: token,
         },
-        body: JSON.stringify({ username, address, jwt }),
+        body: JSON.stringify(credentials),
     });
 
     return response;
