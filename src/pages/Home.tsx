@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { UserModel } from "../models/models";
 import { useEffect, useState } from "react";
 import * as callApi from "../api";
-import { useAccount, useConnect } from "wagmi";
+import { useAccount, useConnect, useWalletClient } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useSignMessage } from "wagmi";
 import { getJwtToken, hasToken, setJwtToken } from "../utils/helper";
@@ -16,11 +16,12 @@ function Home(/* { loggedInUser }: HomePageProps */) {
     const [loggedInUser, setLoggedInUser] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
+    const { data: walletClient } = useWalletClient();
+    // console.log(walletClient);
+
     const { address, isConnected } = useAccount();
-    const { data, isError, isLoading, isSuccess, signMessageAsync } =
-        useSignMessage({
-            message: "Sing up!?",
-        });
+    const { isError, isLoading, isSuccess, signMessageAsync } =
+        useSignMessage();
 
     async function handlePullReqest(type: string) {
         if (!address) return;
@@ -74,15 +75,19 @@ function Home(/* { loggedInUser }: HomePageProps */) {
     };
 
     async function handleSingUp() {
-        console.log(data);
         try {
             if (address === undefined) throw new Error("No address");
 
-            const signature = await signMessageAsync();
+            let message = `I am signing this message to prove ownership of my Ethereum address on ABCname-app\nTimestamp: ${Date.now()}`;
+            // let prefixedMessage = `\x19Ethereum Signed Message:\n${message.length}${message}`;
+
+            const signature = await signMessageAsync({ message });
+            // const signature = await walletClient?.signMessage({ message });
 
             if (signature === undefined) throw new Error("No signature");
 
             const response = await callApi.loginOrSignUp({
+                message,
                 address,
                 signature,
             });
@@ -114,8 +119,10 @@ function Home(/* { loggedInUser }: HomePageProps */) {
                     token,
                 });
 
-                setJwtToken(data.token);
+                if (!callApi.isLoginResponse(data))
+                    throw new Error("Invalid token status");
 
+                // setJwtToken(data.status);
                 setLoggedInUser(true);
 
                 // Do something with the token (e.g., save it to the state, local storage, or send it to another component)
@@ -135,7 +142,7 @@ function Home(/* { loggedInUser }: HomePageProps */) {
     }
 
     useEffect(() => {
-        if (hasToken() && isConnected) {
+        if (isConnected) {
             fetchUser();
             //setShowLoginModal(true);
         } else {

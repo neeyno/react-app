@@ -5,32 +5,44 @@ import { getJwtToken } from "../utils/helper";
 
 export type Signature = `0x${string}`;
 
-export interface SignUpCredentials {
+export interface ISignUpCredentials {
+    message: string;
     address: Address;
     signature: Signature;
 }
 
-export interface LoginCredentials {
+export interface ILoginCredentials {
     address: Address;
     token: string;
 }
 
-interface LoginResponse {
+const isValid = "Token is valid";
+
+interface ISignUpResponse {
     token: string;
+}
+
+interface ILoginResponse {
+    status: typeof isValid;
 }
 
 interface PullResponse {
     items: string[];
 }
 
+export function isLoginResponse(obj: any): obj is ILoginResponse {
+    return obj && typeof obj.status === typeof isValid;
+}
+
 /* 
 // User functions
 */
 export async function loginOrSignUp(
-    credentials: SignUpCredentials
-): Promise<LoginResponse> {
+    credentials: ISignUpCredentials
+): Promise<ISignUpResponse> {
     // const { address, signature } = credentials;
     console.log(credentials);
+
     const response = await fetchData(`/api/login`, {
         method: "POST",
         headers: {
@@ -47,8 +59,8 @@ export async function loginOrSignUp(
 }
 
 export async function logIn(
-    credentials: LoginCredentials
-): Promise<LoginResponse> {
+    credentials: ILoginCredentials
+): Promise<ILoginResponse> {
     const { address, token } = credentials;
     const response = await fetchData(`/api/auth`, {
         method: "POST",
@@ -73,8 +85,8 @@ export async function logOut() {
 }
 
 export async function getLoggedInUser(
-    credentials: LoginCredentials
-): Promise<LoginResponse> {
+    credentials: ILoginCredentials
+): Promise<ILoginResponse> {
     const { address, token } = credentials;
 
     const response = await fetchData(`/api/auth`, {
@@ -98,7 +110,7 @@ export async function getPulls() {}
 export async function getPull(pullId: string) {}
 
 export async function createSinglePull(
-    credentials: LoginCredentials
+    credentials: ILoginCredentials
 ): Promise<PullResponse> {
     // const token = getJwtToken();
     const { address, token } = credentials;
@@ -128,7 +140,7 @@ export async function createSinglePull(
 }
 
 export async function createMultiPull(
-    credentials: LoginCredentials
+    credentials: ILoginCredentials
 ): Promise<PullResponse> {
     // const token = getJwtToken();
     const { address, token } = credentials;
@@ -157,8 +169,14 @@ async function fetchData(reqInput: RequestInfo, reqInit?: RequestInit) {
 
     if (response.ok) {
         const data = await response.json();
+
         return data;
     } else {
-        throw new Error(`Request failed with status: ${response.statusText}`);
+        const errorBody = await response.json();
+        const errorMessage = errorBody.message || response.statusText;
+
+        throw new Error(
+            `Request failed with status ${response.status}: ${errorMessage}`
+        );
     }
 }
