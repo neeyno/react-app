@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 import { UserModel } from "../models/models";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import * as callApi from "../api";
 import { useAccount, useConnect, useWalletClient } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
@@ -13,22 +13,24 @@ import { getJwtToken, hasToken, setJwtToken } from "../utils/helper";
 // }
 
 function Home(/* { loggedInUser }: HomePageProps */) {
-    const [loggedInUser, setLoggedInUser] = useState<boolean>(false);
+    const [loggedInUser, setLoggedInUser] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
 
-    const { data: walletClient } = useWalletClient();
-    // console.log(walletClient);
+    // const { data: walletClient } = useWalletClient();
 
-    const { address, isConnected } = useAccount();
-    const { isError, isLoading, isSuccess, signMessageAsync } =
-        useSignMessage();
+    const { address, isConnected, isDisconnected } = useAccount();
+    const { isError, isSuccess, signMessageAsync } = useSignMessage();
 
     async function handlePullReqest(type: string) {
         if (!address) return;
-        const username = "User1337";
 
         let token = getJwtToken();
-        if (token === null) return;
+        if (!token) return;
+
+        // Set isLoading to true
+        setIsLoading(true);
+
         try {
             if (type === "singlePull") {
                 const response = await callApi.createSinglePull({
@@ -45,9 +47,12 @@ function Home(/* { loggedInUser }: HomePageProps */) {
             }
         } catch (error) {
             console.error(error);
+        } finally {
+            // Set isLoading back to false
+            setIsLoading(false);
         }
     }
-
+    /* 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         if (!address) return;
         e.preventDefault();
@@ -72,7 +77,7 @@ function Home(/* { loggedInUser }: HomePageProps */) {
                 setError("An unknown error occurred.");
             }
         }
-    };
+    }; */
 
     async function handleSingUp() {
         try {
@@ -108,11 +113,11 @@ function Home(/* { loggedInUser }: HomePageProps */) {
         }
     }
 
-    async function fetchUser() {
+    const fetchUser = useCallback(async () => {
         // const username = getUsername();
         const token = getJwtToken();
 
-        if (token && address) {
+        if (token && address && !loggedInUser) {
             try {
                 const data = await callApi.getLoggedInUser({
                     address,
@@ -139,7 +144,7 @@ function Home(/* { loggedInUser }: HomePageProps */) {
                 }
             }
         }
-    }
+    }, [address, loggedInUser]);
 
     useEffect(() => {
         if (isConnected) {
@@ -148,52 +153,69 @@ function Home(/* { loggedInUser }: HomePageProps */) {
         } else {
             console.error("error");
         }
-    }, [isConnected]);
+    }, [isConnected, fetchUser, loggedInUser]);
 
-    if (!isConnected)
-        return (
-            <div>
-                <p>Please Connect Wallet</p>
-                <hr />
-                <ConnectButton />
-            </div>
-        );
-
+    /**
+     * Render the component
+     */
     return (
         <>
             {isConnected && (
-                <div>
-                    <p>Welcome {address}</p>
-                    {loggedInUser ? (
-                        <div>
+                <div className="p-6 mx-auto  rounded-xl shadow-md flex items-center space-x-4">
+                    <div>
+                        <p className="text-xl font-medium text-black">
+                            {`Welcome\n ${address}`}
+                        </p>
+                        {loggedInUser ? (
+                            <div className="mt-2 text-gray-500 flex space-x-4">
+                                <button
+                                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                                    onClick={() =>
+                                        handlePullReqest("singlePull")
+                                    }
+                                >
+                                    {isLoading ? "Loading" : "Single Pull"}
+                                </button>
+                                <button
+                                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                                    onClick={() =>
+                                        handlePullReqest("multiPull")
+                                    }
+                                >
+                                    {isLoading ? "Loading" : "Multi Pull"}
+                                </button>
+                            </div>
+                        ) : (
                             <button
-                                onClick={() => handlePullReqest("singlePull")}
-                            >
-                                Single Pull
-                            </button>
-                            <button
-                                onClick={() => handlePullReqest("multiPull")}
-                            >
-                                Multi Pull
-                            </button>
-                            {/* <button
                                 disabled={isLoading}
+                                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                                 onClick={() => handleSingUp()}
                             >
                                 Sign message
-                            </button> */}
-                        </div>
-                    ) : (
-                        <button
-                            disabled={isLoading}
-                            onClick={() => handleSingUp()}
-                        >
-                            Sign message
-                        </button>
-                    )}
+                            </button>
+                        )}
+                    </div>
                 </div>
             )}
-            {/*  {isDisconnected && (
+            {isDisconnected && (
+                <div className="p-6 max-w-sm mx-auto bg-white rounded-xl shadow-md flex items-center space-x-4">
+                    <div>
+                        <div className="text-xl font-medium text-black">
+                            Please Connect Wallet
+                        </div>
+                        <hr className="mt-4" />
+                        <ConnectButton />
+                    </div>
+                </div>
+            )}
+            {error && <div>{error}</div>}
+        </>
+    );
+}
+
+export default Home;
+
+/*  {isDisconnected && (
                 <div>
                     <p>Please Connect Wallet</p>
                     <hr />
@@ -222,10 +244,5 @@ function Home(/* { loggedInUser }: HomePageProps */) {
                         {error && <div>{error}</div>}
                     </form>
                 </div>
-            )} */}
-            {error && <div>{error}</div>}
-        </>
-    );
-}
-
-export default Home;
+            )} 
+            */
