@@ -99,9 +99,12 @@ function Home(/* { loggedInUser }: HomePageProps */) {
 
             setJwtToken(response.token);
 
+            setLoggedInUser(true);
+
             // Do something with the token (e.g., save it to the state, local storage, or send it to another component)
             console.log("Sign Up successful:", response.token);
         } catch (err) {
+            setLoggedInUser(false);
             console.error(err);
             if (err instanceof Error) {
                 setError(err.message);
