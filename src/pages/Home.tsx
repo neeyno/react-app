@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
 
 import { UserModel } from "../models/models";
 import { useCallback, useEffect, useState } from "react";
@@ -7,6 +7,7 @@ import { useAccount, useConnect, useWalletClient } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useSignMessage } from "wagmi";
 import { getJwtToken, hasToken, setJwtToken } from "../utils/helper";
+import PullModalComponent from "../components/PullModalComponent";
 
 // interface HomePageProps {
 //     loggedInUser: UserModel | null;
@@ -16,6 +17,7 @@ function Home(/* { loggedInUser }: HomePageProps */) {
     const [loggedInUser, setLoggedInUser] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [pullModal, setPullModal] = useState<string[] | null>(null);
 
     // const { data: walletClient } = useWalletClient();
 
@@ -37,12 +39,16 @@ function Home(/* { loggedInUser }: HomePageProps */) {
                     address,
                     token,
                 });
+
+                setPullModal(response.items);
                 console.log(response.items);
             } else {
                 const response = await callApi.createMultiPull({
                     address,
                     token,
                 });
+
+                setPullModal(response.items);
                 console.log(response.items);
             }
         } catch (error) {
@@ -52,32 +58,6 @@ function Home(/* { loggedInUser }: HomePageProps */) {
             setIsLoading(false);
         }
     }
-    /* 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        if (!address) return;
-        e.preventDefault();
-        setError(null);
-
-        let token = getJwtToken();
-
-        try {
-            // const data = await callApi.getLoggedInUser({
-            //     address,
-            //     token,
-            // });
-
-            // Do something with the token (e.g., save it to the state, local storage, or send it to another component)
-            console.log("Login successful:", "data");
-        } catch (err) {
-            console.error(err);
-
-            if (err instanceof Error) {
-                setError(err.message);
-            } else {
-                setError("An unknown error occurred.");
-            }
-        }
-    }; */
 
     async function handleSingUp() {
         try {
@@ -115,6 +95,10 @@ function Home(/* { loggedInUser }: HomePageProps */) {
             // setLoading(false);
         }
     }
+
+    const handleCloseModal = () => {
+        setPullModal(null);
+    };
 
     const fetchUser = useCallback(async () => {
         // const username = getUsername();
@@ -201,7 +185,7 @@ function Home(/* { loggedInUser }: HomePageProps */) {
                 </div>
             )}
             {isDisconnected && (
-                <div className="p-6 max-w-sm mx-auto bg-white rounded-xl shadow-md flex items-center space-x-4">
+                <div className="p-6 max-w-sm mx-auto rounded-xl shadow-md flex items-center space-x-4">
                     <div>
                         <div className="text-xl font-medium text-black">
                             Please Connect Wallet
@@ -212,11 +196,44 @@ function Home(/* { loggedInUser }: HomePageProps */) {
                 </div>
             )}
             {error && <div>{error}</div>}
+            {/* {pullModal && (
+                <PullModalComponent
+                    pullModal={pullModal}
+                    onClose={handleCloseModal}
+                />
+            )} */}
         </>
     );
 }
 
 export default Home;
+
+/* 
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        if (!address) return;
+        e.preventDefault();
+        setError(null);
+
+        let token = getJwtToken();
+
+        try {
+            // const data = await callApi.getLoggedInUser({
+            //     address,
+            //     token,
+            // });
+
+            // Do something with the token (e.g., save it to the state, local storage, or send it to another component)
+            console.log("Login successful:", "data");
+        } catch (err) {
+            console.error(err);
+
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError("An unknown error occurred.");
+            }
+        }
+    }; */
 
 /*  {isDisconnected && (
                 <div>
